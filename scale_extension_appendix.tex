@@ -1,0 +1,131 @@
+\section{Endpoint insufficiency with an unknown common precision}
+\label{app:scale-extension}
+
+\paragraph{Proof of Proposition~\ref{prop:scale-sufficiency}.}
+\begin{proof}
+Let $Q_y(z)=(z-s_y\boldsymbol a)^\mathsf T K(z-s_y\boldsymbol a)$ and
+$\kappa=\alpha+T/2$. Integrating the normal likelihood against the Gamma
+density gives
+\begin{equation}
+ m_y(z)=\frac{\beta^\alpha\Gamma(\kappa)}
+ {\Gamma(\alpha)(2\pi)^{T/2}|\Sigma_0|^{1/2}}
+ \{\beta+Q_y(z)/2\}^{-\kappa}.
+ \label{eq:scale-density}
+\end{equation}
+This is a multivariate Student density with $2\alpha$ degrees of freedom,
+location $s_y\boldsymbol a$, and scale matrix $(\beta/\alpha)\Sigma_0$.
+The scale matrix is not its covariance: the latter exists only for
+$\alpha>1$ and equals $\beta\Sigma_0/(\alpha-1)$.
+Since $Q_y=R+J-2s_yU$, taking the ratio proves the first formula in
+\eqref{eq:scale-bf}. Applying the same integral to
+$S\mid Y,\lambda\sim N(s_YM,C/\lambda)$ proves the second.
+
+Write $b(z)=\beta+(R+J)/2$. Since $Q_0,Q_1\geq0$ and $\beta>0$,
+$b(z)>|U(z)|$ and
+\[
+ \log\mathrm{BF}_{\rm H}(z)
+ =2\kappa\operatorname{arctanh}\{U(z)/b(z)\}.
+\]
+If $T=1$, $S$ determines $Z$. If $\boldsymbol a=0$, both Bayes factors
+are one. These cases give sufficiency.
+
+Conversely let $T\geq2$ and $\boldsymbol a\ne0$. On the hyperplane
+$\boldsymbol1^\mathsf Tz=s$, choose
+$z_s=(s/C)\Sigma_0\boldsymbol1$ and any nonzero
+$w\in\{w:\boldsymbol1^\mathsf Tw=0\}$. Then
+\[
+ R(z_s+tw)=s^2/C+t^2w^\mathsf TKw,\qquad
+ U(z_s+tw)=Ms/C+t\boldsymbol a^\mathsf TKw.
+\]
+If $\boldsymbol a$ is not proportional to $\Sigma_0\boldsymbol1$, a
+$w$ exists with $\boldsymbol a^\mathsf TKw\ne0$. Along this line
+$U/b$ is not identically zero but tends to zero as $|t|\to\infty$.
+Consequently the Bayes factor is nonconstant on every endpoint hyperplane.
+If $\boldsymbol a=(M/C)\Sigma_0\boldsymbol1\ne0$, then $M\ne0$.
+For every $s\ne0$, the numerator $U=Ms/C$ is nonzero and constant on the
+hyperplane, while $b(z_s+tw)$ varies with $t$. Hence the Bayes factor is
+again nonconstant there.
+
+Both predictive densities are continuous and strictly positive on $\R^T$.
+In linear coordinates $(S,W)$, their conditional densities for $W$ given
+$S=s$ are therefore strictly positive on the whole $(T-1)$-dimensional
+fiber. A continuous nonconstant Bayes factor takes different values on
+nonempty relatively open subsets of that fiber. In the aligned case the
+single exceptional value $s=0$ has probability zero. It follows that the
+history posterior $q_{\rm H}$ is not measurable with respect to $S$.
+Since $q_{\rm E}=\E[q_{\rm H}\mid S]$, the gains are
+\begin{align*}
+ G_B&=\E[(q_{\rm H}-q_{\rm E})^2]>0,\\
+ G_{\log}&=\E\KL\{\operatorname{Bern}(q_{\rm H})
+                  \|\operatorname{Bern}(q_{\rm E})\}>0.
+\end{align*}
+Expected Bayes Brier loss is at most $1/4$ and expected Bayes logarithmic
+loss is at most $\log2$. Thus no finite observation moment is needed.
+Fixed $p_0$ makes the endpoint an invertible transformation of $S$.
+\end{proof}
+
+\paragraph{Sufficiency before and after integration.}
+For the original family indexed by $(y,\lambda)$, the likelihood ratio at
+two sample points is
+\[
+ \frac{f_{y,\lambda}(z)}{f_{y,\lambda}(z')}
+ =\exp\left[-\frac\lambda2
+    \{R(z)-R(z')-2s_y(U(z)-U(z'))\}\right].
+\]
+It is independent of both parameters if and only if $R(z)=R(z')$ and
+$U(z)=U(z')$. Thus $(U,R)$ is minimal sufficient for that family.
+For the two marginalized distributions $m_0,m_1$, the usual likelihood-ratio
+criterion instead makes $m_1/m_0$ itself minimal sufficient. The convenient
+pair $(U,R)$ should not be called minimal for this binary experiment.
+
+\paragraph{Residual energy and the decision boundary.}
+In the aligned case, whiten the observation by $\Sigma_0^{-1/2}$ and
+project onto the unit vector
+$d=\Sigma_0^{1/2}\boldsymbol1/\sqrt C$. The projection is $S/\sqrt C$
+and its squared orthogonal residual is $E=R-S^2/C$. The whitened mean is
+parallel to $d$. Conditional on $(Y,\lambda)$, the residual is therefore
+a centered $(T-1)$-dimensional normal vector with covariance
+$I_{T-1}/\lambda$, independent of the projection. Its distribution does
+not depend on $Y$, which also gives independence of $S$ and $E$ conditional
+on $\lambda$. The chi-squared density yields
+\eqref{eq:scale-residual-precision}. Since $\lambda$ is independent of $Y$,
+$E$ is marginally independent of $Y$, although it is not independent of
+$Y$ conditional on $S$.
+
+More generally, holding $U$ fixed gives
+\[
+ \frac{\partial\log\mathrm{BF}_{\rm H}}{\partial R}
+ =-\frac{\kappa U}{b^2-U^2}.
+\]
+Increasing residual energy therefore moves the posterior toward its prior
+value in the aligned case. Since $b>|U|$, the sign of the history log
+Bayes factor is the sign of $U$. The sign of the endpoint log Bayes factor
+is the sign of $MS$. Equal priors and alignment consequently give identical
+Bayes classifications except on a probability-zero tie set. This conclusion
+does not extend in general to unequal outcome priors.
+
+\paragraph{Known-scale limit, including expected losses.}
+Take $\beta_n=\alpha_n/\lambda_0$ and $\alpha_n\to\infty$. For any fixed
+$q\geq0$,
+\[
+ (\alpha_n+T/2)\log\{1+\lambda_0q/(2\alpha_n)\}
+ \longrightarrow\lambda_0q/2.
+\]
+Applying this to $Q_0$ and $Q_1$ proves convergence of both Bayes factors
+to the stated Gaussian formulas. The gamma-ratio asymptotic
+$\Gamma(\alpha_n+T/2)/\{\Gamma(\alpha_n)\alpha_n^{T/2}\}\to1$
+also shows that each density in \eqref{eq:scale-density} converges pointwise
+to its $N(s_y\boldsymbol a,\Sigma_0/\lambda_0)$ density. Because all are
+probability densities, Scheff\'e's lemma gives convergence in $L^1$.
+The same argument applies to the endpoint densities.
+
+For either experiment, write $m_n=\pi_0m_{1,n}+(1-\pi_0)m_{0,n}$ and
+$q_n=\pi_0m_{1,n}/m_n$. The limits have positive densities, so $q_n\to q$
+pointwise. Bayes Brier and log risks are respectively
+$\int m_n q_n(1-q_n)$ and $\int m_n h(q_n)$, with
+$h(q)=-q\log q-(1-q)\log(1-q)$. The integrands' posterior factors are
+bounded continuous functions. Splitting each difference into a density
+difference bounded by $\|m_n-m\|_1$ times its uniform bound, and a
+posterior difference integrated against $m$, proves risk convergence by
+dominated convergence. In the aligned Gaussian limit the gains are zero,
+despite being strictly positive at every finite $\alpha_n$.

@@ -1,0 +1,13 @@
+lead,split,asset,n,dates
+5,train,BTC,661,28
+5,train,ETH,661,28
+5,validation,BTC,332,14
+5,validation,ETH,332,14
+5,test,BTC,332,14
+5,test,ETH,332,14
+1,train,BTC,661,28
+1,train,ETH,661,28
+1,validation,BTC,332,14
+1,validation,ETH,332,14
+1,test,BTC,332,14
+1,test,ETH,332,14

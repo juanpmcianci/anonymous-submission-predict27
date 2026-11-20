@@ -1,0 +1,176 @@
+\section{Endpoint sufficiency for the finite mixture}
+\label{app:mixture-endpoint}
+
+\subsection{Pointwise and almost-sure formulations}
+Fix $0<\pi_0<1$. Positivity gives a continuous posterior
+$q(z)=\sigmoid(\logit\pi_0+\ell(z))$. Thus statistical sufficiency of
+$S=\boldsymbol 1^{\mathsf T}Z$ is equivalent to
+$\ell(z)=b(S)$ almost everywhere for some measurable $b$. The mixture density
+$(1-\pi_0)m_0+\pi_0m_1$ is everywhere positive, so its null sets and Lebesgue
+null sets agree.
+
+Here the almost-everywhere qualifier can be removed. Use linear coordinates
+$(s,u)\in\R\times\R^{T-1}$ with
+$z=(u_1,\ldots,u_{T-1},s-\sum_{i<T}u_i)$, and write the transformed continuous
+function as $F(s,u)$. Fubini's theorem implies that, for almost every $s$,
+$F(s,u)=b(s)$ for almost every $u$. Continuity in $u$ extends this equality to
+every $u$ for each such $s$. In particular,
+$F(s,u)=F(s,0)$ on those fibers. Their $s$-values form a dense set, so continuity
+in $s$ implies $F(s,u)=F(s,0)$ for every $(s,u)$. Hence
+$\widetilde b(s)=F(s,0)$ supplies a $C^1$ pointwise version.
+
+If $\ell(z)=\widetilde b(\sum_tz_t)$, the chain rule gives
+\eqref{eq:mixture-gradient-test}. Conversely, that equation makes
+$\nabla\ell(z)$ proportional to $\boldsymbol 1$. For any $z,z'$ on the same
+sum hyperplane, the segment between them remains on that hyperplane and
+\[
+ \ell(z')-\ell(z)
+ =\int_0^1\nabla\ell(z+u(z'-z))^{\mathsf T}(z'-z)\,du=0.
+\]
+All sum hyperplanes are connected. This proves
+Proposition~\ref{prop:mixture-endpoint-gradient}, including the equivalence to
+statistical sufficiency rather than merely a pointwise algebraic condition.
+On a restricted support, connectedness of the relevant fibers must be
+checked; the common-tail proposition additionally needs the stated full
+unbounded support.
+
+\subsection{Why the score improvement is strict}
+Let $q_{\rm H}=\Prob(Y=1\mid Z)$ and
+$q_{\rm E}=\Prob(Y=1\mid S)=\E(q_{\rm H}\mid S)$. Failure of the gradient
+condition implies, by the preceding equivalence, that $q_{\rm H}$ is not
+$S$-measurable up to a null set. Therefore
+\[
+ \E[(q_{\rm H}-q_{\rm E})^2]>0.
+\]
+Conditional expectation gives the Brier-risk difference exactly as this
+quantity. Likewise, the logarithmic-risk difference equals
+\[
+ \E\!\left[
+ D_{\rm KL}\{\operatorname{Bern}(q_{\rm H})
+           \Vert\operatorname{Bern}(q_{\rm E})\}\right]
+ = I(Y;Z\mid S)>0.
+\]
+Both optimal logarithmic risks are conditional entropies and are finite,
+bounded by $H(Y)\leq\log2$. These are strict population comparisons between
+optimal forecasts under one specified model. They are not guarantees for a
+fitted classifier under an unknown data-generating distribution.
+
+One can also see why a same-endpoint counterexample is not only a null-set
+observation. Two unequal continuous values on one fiber persist in disjoint
+neighborhoods and in nearby fibers. Positive densities assign positive
+conditional mass to those fiber neighborhoods for almost every nearby sum.
+The posterior then has positive conditional variance on a set of sums with
+positive probability. The Fubini argument above formalizes this extension.
+
+\subsection{The two levels of mixture responsibility}
+All sums are finite, so differentiation commutes with summation without a
+domination condition. Since the gates depend on the fixed design and not on
+$z_t$,
+\[
+ \partial_{z_t}\log f_{yjt}(z_t)
+ =\sum_k\frac{\rho_{jkt}g_{yjkt}(z_t)}{f_{yjt}(z_t)}
+          \partial_{z_t}\log g_{yjkt}(z_t).
+\]
+Write $\tau_{yj}(z)=\varpi_j\prod_t f_{yjt}(z_t)/m_y(z)$ and
+$\eta_{yjkt}(z_t)=\rho_{jkt}g_{yjkt}(z_t)/f_{yjt}(z_t)$.
+Differentiate the product within each shared-state likelihood and then the
+outer state mixture to obtain
+\begin{equation}
+ \partial_{z_t}\log m_y(z)
+ =\sum_j\tau_{yj}(z)\sum_k\eta_{yjkt}(z_t)
+       \partial_{z_t}\log g_{yjkt}(z_t).
+ \label{eq:mixture-score-responsibilities}
+\end{equation}
+This is the elementary conditional-score identity of incomplete-data
+likelihood calculations \cite{louis1982observed}, differentiated with respect
+to an observation coordinate. The Gaussian component score is
+$-(z_t-\mu)/\sigma^2$. For a Student component with location $\mu$, scale $b$,
+and degrees of freedom $\nu$, the score is
+\[
+ -\frac{(\nu+1)(z_t-\mu)}{\nu b^2+(z_t-\mu)^2}.
+\]
+The checker evaluates both responsibility levels explicitly and compares the
+resulting derivative with central differences of the production marginal
+likelihood at fixed, unfitted parameter values.
+
+\subsection{Independent-increment specialization}
+\begin{proposition}[Common exponential tilt]
+\label{prop:mixture-independent-tilt}
+Let $T\geq2$ and suppose
+$m_y(z)=\prod_t f_{yt}(z_t)$, where every $f_{yt}$ is a strictly positive $C^1$
+density on $\R$. Then $\sum_tZ_t$ is sufficient for $Y$ if and only if there
+exists one constant $c$ such that, for every $t$,
+\begin{equation}
+ f_{1t}(x)=\exp\{cx-\psi_t(c)\}f_{0t}(x),\qquad
+ \psi_t(c)=\log\int_{\R}e^{cu}f_{0t}(u)\,du<\infty.
+ \label{eq:mixture-common-tilt}
+\end{equation}
+The slope $c$ is common to all increments; the normalizing intercepts may
+differ.
+\end{proposition}
+\begin{proof}
+Write $h_t(x)=\log\{f_{1t}(x)/f_{0t}(x)\}$. The log Bayes factor is
+$\sum_t h_t(z_t)$. By Proposition~\ref{prop:mixture-endpoint-gradient},
+$h'_r(x)=h'_t(u)$ for all $x,u$ and any distinct $r,t$. Because $T\geq2$ and
+the support is all of $\R^T$, one may vary either coordinate while holding the
+other fixed. Every derivative must therefore be the same constant $c$.
+Integration gives $h_t(x)=cx+b_t$; normalization of $f_{1t}$ implies
+$b_t=-\psi_t(c)$ and finiteness of the integral. Conversely,
+\eqref{eq:mixture-common-tilt} gives
+$\ell(z)=c\sum_tz_t-\sum_t\psi_t(c)$, a function of the endpoint.
+\end{proof}
+
+If every one-step likelihood ratio tends to one at both tails, then
+$cx+b_t\to0$ forces $c=0$ and $b_t=0$. Consequently endpoint sufficiency in
+that independent-increment family requires identical outcome densities at
+every step. This argument concerns a fixed sample dimension and a binary
+experiment; it does not invoke an unrestricted fixed-dimensional-sufficiency
+characterization for an entire parametric family.
+
+\subsection{Proof of the common-tail proposition}
+For any fixed $s\in\R$ and $R>0$, let
+\[
+ z_R=(R,\ldots,R,s-(T-1)R).
+\]
+Every coordinate tends to one of the two tails as $R\to\infty$, whereas its
+sum remains $s$. For each catalogue state,
+\[
+ A_j(R)=\prod_{t=1}^T\frac{f_{1jt}(z_{R,t})}{f_{0jt}(z_{R,t})}\longrightarrow1.
+\]
+Writing the marginal likelihood ratio as a convex combination yields
+\[
+ \frac{m_1(z_R)}{m_0(z_R)}
+ =\sum_j\frac{\varpi_j\prod_t f_{0jt}(z_{R,t})}{m_0(z_R)}A_j(R),\qquad
+ \min_j A_j(R)\leq\frac{m_1(z_R)}{m_0(z_R)}\leq\max_j A_j(R).
+\]
+The finite catalogue makes both bounds tend to one. If $S$ were sufficient,
+the pointwise version proved above would make this ratio equal to
+$\exp\{b(s)\}$ for every $R$, hence $b(s)=0$. Since $s$ was arbitrary,
+$m_1=m_0$. The converse is immediate. The strict-score statement follows from
+the earlier risk identities.
+
+The proof requires common outcome-specific catalogue masses. It does not
+justify an exchange of a tail limit and an arbitrary continuous nuisance
+integral. Nor does it apply unchanged after censoring, truncation, or clipping
+has replaced the full-support observation law.
+
+For a Student component with a fixed finite location, positive scale $b$, and
+degrees of freedom $\nu$, its density has leading term
+$c_\nu b^\nu |x|^{-(\nu+1)}$ at either tail. If its mixing weight, scale, and
+$\nu$ do not depend on the outcome, that term is identical for both outcomes;
+finite Gaussian components decay faster. This proves
+\eqref{eq:mixture-common-tail} for the stated empirical and synthetic
+catalogues, including the shifted Student component in the latter.
+
+Finally, the empirical mean calculation does not assume a favorable fitted
+weight vector. Its Student component is centered, so at normalized volume
+$r>0$ the sign of the directional mean for $a>0$ is the sign of
+\[
+ w(1+r)^{1/2}-\frac{1-w}{4}(1+r)^{3/10}
+ =(1+r)^{3/10}\left[w(1+r)^{1/5}-\frac{1-w}{4}\right].
+\]
+For $w\geq1/5$, the bracket is strictly positive when $r>0$. The catalogue
+contains positive amplitudes and its smoothed masses are positive, giving
+opposite nonzero marginal means under the two outcomes at any such time.
+The outcome laws are therefore distinct. If all volumes are zero, all
+location shifts vanish and this informativeness argument does not apply.

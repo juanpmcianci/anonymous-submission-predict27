@@ -1,0 +1,126 @@
+\section{Supporting concentration and error bounds}
+\label{app:supporting-rate}
+\label{sec:concentration}
+The following standard marginal-likelihood argument separates assumptions about likelihood behavior from assumptions about prior mass; see also \cite{chatterjee2020bayes} for general Bayes-factor convergence results. Fix an infinite deterministic design $(v_t)_{t\geq1}$ and the corresponding product probability law $P_*$ at $(y^*,\theta^*)$. Every almost-sure statement below refers to this one law. Write
+\[
+ \ell_{y,T}(\theta)=\log L_{y,T}(\theta),\quad
+ \Lambda_{y,T}(\theta)=T^{-1}\E_*\ell_{y,T}(\theta),\quad
+ a_{y,T}=\sup_{\theta\in\Theta}\Lambda_{y,T}(\theta).
+\]
+Assume these expectations and suprema are finite and the following sets and suprema are measurable.
+
+\begin{assumption}[Uniform likelihood control and prior mass]
+\label{ass:rate}
+For both outcomes,
+\[
+ u_{y,T}:=\sup_\theta|T^{-1}\ell_{y,T}(\theta)-\Lambda_{y,T}(\theta)|\longrightarrow0
+ \quad P_*\text{-almost surely}.
+\]
+For every $\epsilon>0$, the set
+$A_{y,T}(\epsilon)=\{\theta:\Lambda_{y,T}(\theta)\geq a_{y,T}-\epsilon\}$ has positive prior mass and
+\[
+ -T^{-1}\log\Pi(A_{y,T}(\epsilon))\longrightarrow0.
+\]
+\end{assumption}
+Positive mass for each finite $T$ is insufficient: a set whose mass decreases exponentially can change the leading marginal-likelihood rate. A fixed finite nuisance prior with all masses positive satisfies the second condition automatically when $\Theta$ equals its support. On such a support, a strong law for each log likelihood implies the first condition because only finitely many likelihoods need simultaneous control.
+
+\begin{lemma}[Signed Bayes-factor rate]
+\label{thm:rate}
+Under Assumptions~\ref{ass:product} and \ref{ass:rate}, with $\theta^*\in\Theta$,
+\begin{equation}
+ \frac{s_{y^*}}{T}\log\BF_T=\delta_T+o(1)\qquad P_*\text{-almost surely}.
+ \label{eq:rate}
+\end{equation}
+If $\liminf_T\delta_T>0$, then $\Prob(Y=y^*\mid Z_{1:T},v_{1:T})\to1$ almost surely and
+\[
+ -T^{-1}\log\Prob(Y\ne y^*\mid Z_{1:T},v_{1:T})=\delta_T+o(1).
+\]
+\end{lemma}
+The proof in Appendix~\ref{app:rate} keeps the near-optimal prior mass explicitly. This is an almost-sure exponent for posterior error along paths. It is not automatically the exponent of the expected error or the optimal classification risk.
+
+\subsection{A finite-prior bound without bounded increments}
+\label{sec:finite}
+Now let $\Pi=\sum_{j=1}^Jw_j\delta_{\theta_j}$ with $w_j>0$, and suppose the true nuisance value is $\theta_{j^*}$. Denote $w_*=w_{j^*}$ and prior outcome odds against the truth by $r=\Prob(Y=1-y^*)/\Prob(Y=y^*)$. For $s\in(0,1)$ define the fractional affinity
+\begin{equation}
+ A_{j,T}(s)=\prod_{t=1}^T\int_{\R}
+ f_{y^*}(z\mid v_t,\theta_{j^*})^{1-s}
+ f_{1-y^*}(z\mid v_t,\theta_j)^s\,dz.
+ \label{eq:affinity}
+\end{equation}
+Each factor belongs to $(0,1]$ by H\"older's inequality. Gaussian and Student components do not require bounded log-likelihood ratios for this definition.
+
+\begin{proposition}[Finite-prior posterior error]
+\label{prop:finite}
+Let $e_T=\Prob(Y\ne y^*\mid Z_{1:T},v_{1:T})$ and
+$C_T(s)=(r/w_*)^s\sum_j w_j^s A_{j,T}(s)$. Under Assumption~\ref{ass:product},
+\begin{align}
+ \E_* e_T&\leq\min\{1,C_T(s)\},\label{eq:expected}\\
+ P_*(e_T\geq\epsilon)&\leq\min\left\{1,\left(\frac{1-\epsilon}{\epsilon}\right)^s C_T(s)\right\},\quad 0<\epsilon<1.
+ \label{eq:tail}
+\end{align}
+For equal nuisance weights and equal outcome priors,
+\[
+ \E_*e_T\leq\min\{1,J\exp[-Tc_T(s)]\},\qquad c_T(s)=\min_j[-T^{-1}\log A_{j,T}(s)].
+\]
+\end{proposition}
+The proof uses a lower bound on the true marginal likelihood and fractional powers of a finite sum (Appendix~\ref{app:finite}). The factor $w_*^{-s}$ exposes the cost of a prior that gives the truth little mass. The bound may be uninformative at short horizons. It does not extend unchanged to a continuous prior or to truth outside the support, and the affinity rate is distinct from the KL rate in Lemma~\ref{thm:rate}.
+
+
+\section{Supporting local stability bound}
+\label{app:supporting-stability}
+\label{sec:stability}
+\subsection{Perturbing increments and volumes}
+Fix $R,V<\infty$. Suppose, uniformly over $y,\theta$, the log densities satisfy
+\begin{equation}
+ |\log f_y(z\mid v,\theta)-\log f_y(z'\mid v',\theta)|
+ \leq L_z|z-z'|+L_v|v-v'|
+ \label{eq:lipschitz}
+\end{equation}
+for $z,z'\in[-R,R]$ and $v,v'\in[0,V]$. The prior and the initial conditioning information remain the same for the two records. For a finite nuisance catalogue of smooth positive component densities and smooth gates, such bounds hold on compact observation domains when scales stay positive. Merely bounding increments while leaving all volumes unbounded does not ensure a uniform Gaussian score bound in \eqref{eq:example}, because its first component's scale shrinks with volume.
+
+\begin{proposition}[Local posterior stability]
+\label{prop:stability}
+For two records satisfying \eqref{eq:lipschitz}, set
+$D=L_z\sum_t|z_t-z'_t|+L_v\sum_t|v_t-v'_t|$. Then
+\begin{equation}
+ |\log\BF_T(z,v)-\log\BF_T(z',v')|\leq2D,\qquad
+ |\pi_T(z,v)-\pi_T(z',v')|\leq D/2.
+ \label{eq:stability}
+\end{equation}
+\end{proposition}
+The first inequality follows by integrating the pathwise likelihood bounds; the second uses $\sup_x\sigmoid'(x)=1/4$. Appendix~\ref{app:stability} supplies the details and the computable constants used in the experiments. The bound is local to both records, not just the unperturbed one.
+
+Stability depends on the measurement scale. If all prices in both records lie in $[\varepsilon,1-\varepsilon]$, then
+\[
+ \sum_{t=1}^T|z_t-z'_t|
+ \leq\frac{2}{\varepsilon(1-\varepsilon)}\sum_{t=0}^T|p_t-p'_t|.
+\]
+The constant diverges near the boundary. Log-odds modeling therefore requires more care with extreme prices, even though it removes support constraints for density modeling.
+
+
+\section{Posterior belief change and information}
+\label{app:belief-change}
+\label{sec:information}
+Define the realized posterior-to-prior divergence
+\begin{equation}
+ \IG(z,v)=\pi_T\log\frac{\pi_T}{\pi_0}+(1-\pi_T)\log\frac{1-\pi_T}{1-\pi_0}.
+ \label{eq:ig}
+\end{equation}
+It is nonnegative and at most $\max\{-\log\pi_0,-\log(1-\pi_0)\}$, interpreting $0\log0=0$. For the symmetric prior its ceiling is $\log2$ nats. For an asymmetric prior, the general upper bound is attained at the endpoint with smaller prior mass. Writing $u=\log\BF_T$ and $q(u)=\sigmoid(\logit\pi_0+u)$ gives
+\[
+ \frac{d}{du}\KL(\operatorname{Bern}(q(u))\|\operatorname{Bern}(\pi_0))
+ =u\,q(u)\{1-q(u)\}.
+\]
+The divergence increases away from zero along each branch. Only when $\pi_0=1/2$ is it a single function of $|u|$.
+
+Under the full prior-predictive model for the fixed design, with $\theta\sim\Pi$ as well as $Y\sim\operatorname{Bern}(\pi_0)$,
+\begin{equation}
+ \E_{\mathrm{prior}}\IG(Z_{1:T},v_{1:T})
+ = I(Y;Z_{1:T}\mid v_{1:T})\leq h(\pi_0),
+ \label{eq:mi}
+\end{equation}
+where $h(q)=-q\log q-(1-q)\log(1-q)$. For nested designs the expected information cannot decrease; individual realized information paths can decrease after contradictory observations. Averaging at a fixed nuisance truth does not generally equal the mutual information of the nuisance-integrated model.
+
+Equation~\eqref{eq:mi} holds under the assumed joint law. A misspecified likelihood can produce large $\IG$ while assigning high probability to wrong outcomes. We therefore report Brier loss $(q-y)^2$ and logarithmic loss $-y\log q-(1-y)\log(1-q)$ alongside information gain. Both are strictly proper \cite{gneiting2007strictly}, whereas information gain alone cannot reward accurate forecasts over confident mistakes.
+
+

@@ -1,0 +1,63 @@
+\section{Gaussian endpoint sufficiency and score gains}
+\label{app:gaussian-extension}
+\paragraph{Proof of Proposition~\ref{prop:ext-sufficiency}.}
+\begin{proof}
+Expanding the Gaussian density makes its parameter-dependent factor
+$\exp\{s_Y A U-A^2J_{\rm H}/2\}$. Integrating over $A$ gives the first
+posterior formula and shows that $U$ is sufficient for $Y$.
+Likewise $S\mid Y,A\sim N(s_Y AM,C)$, giving the second formula.
+
+The identity
+\[
+ \Delta=
+ \left(\boldsymbol a-\frac MC\Sigma\boldsymbol1\right)^\mathsf T
+ \Sigma^{-1}
+ \left(\boldsymbol a-\frac MC\Sigma\boldsymbol1\right)
+\]
+proves nonnegativity and its equality condition. If $\Delta=0$, then
+$U=(M/C)S$, so the posteriors agree. This also covers
+$\boldsymbol a=0$, when both equal $\pi_0$.
+
+For the converse, suppose $\Delta>0$ and define
+$R=U-(M/C)S$. Conditional on $(Y,A)$, $R$ and $S$ are independent and
+\begin{equation}
+ R\mid Y,A\sim N(s_Y A\Delta,\Delta).
+ \label{eq:ext-residual}
+\end{equation}
+Indeed, $\operatorname{Cov}(U,S\mid Y,A)=M$ and
+$\operatorname{Var}(U\mid Y,A)=J_{\rm H}$. Thus, conditional on every finite
+$S=s$, the distribution of $U$ has a strictly positive density on $\R$.
+For $j>0$, differentiation under the integral is justified by Gaussian
+damping in $\alpha$, and
+\[
+ \frac{d}{du}\log\frac{G_j(u)}{G_j(-u)}
+ =\frac{G'_j(u)}{G_j(u)}+\frac{G'_j(-u)}{G_j(-u)}>0.
+\]
+Strictness follows from $\nu((0,\infty))>0$. Consequently $q_{\rm H}$ is not
+constant conditional on $S$, and cannot agree almost surely with $q_{\rm E}$.
+The proper-score differences are
+\begin{align*}
+ \E[\mathcal L_{\log}(q_{\rm E},Y)-\mathcal L_{\log}(q_{\rm H},Y)]
+ &=\E\KL\!\left(\operatorname{Bern}(q_{\rm H})\,
+       \middle\|\,\operatorname{Bern}(q_{\rm E})\right),\\
+ \E[(Y-q_{\rm E})^2-(Y-q_{\rm H})^2]
+ &=\E[(q_{\rm H}-q_{\rm E})^2].
+\end{align*}
+Both are therefore strictly positive. Since fixed $p_0$ makes $p_T$ an
+invertible transformation of $S$, the same conclusion holds for the terminal
+price.
+\end{proof}
+\paragraph{Conditional information--MMSE identity.}
+To verify \eqref{eq:ext-conditional-immse}, use the Markov relation
+$Y\mathbin{-}X\mathbin{-}W_\gamma$ to write
+$I(Y;W_\gamma)=I(X;W_\gamma)-I(X;W_\gamma\mid Y)$.
+Apply the information--MMSE identity to both terms. Their derivative is
+\[
+ \frac12\left\{\E\operatorname{Var}(X\mid W_\gamma)
+       -\E\operatorname{Var}(X\mid W_\gamma,Y)\right\}
+ =\frac12\E\operatorname{Var}\!\left(\E[X\mid W_\gamma,Y]\mid W_\gamma\right).
+\]
+The last conditional variance has the binary expression in
+\eqref{eq:ext-conditional-immse}; it is bounded in expectation by
+$\E X^2=\E A^2$. Finite second moments justify the integrated identity.
+

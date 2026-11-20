@@ -1,0 +1,15 @@
+\begin{tabular}{@{}lrrcc@{}}
+\toprule
+Setting & Oracle gain & Achieved gain & $\Prob(\text{lo}>0)$ & $\Prob(\text{hi}<\delta)$ \\
+&&& 664 / 2{,}350 & 664 / 2{,}350 \\
+\midrule
+Efficient, $\alpha=1$ & $0.0000$ & $-0.00006$ & 0.04 / 0.04 & 0.63 / 0.86 \\
+Efficient, $\alpha=3$ & $0.0000$ & $-0.00004$ & 0.07 / 0.08 & 0.61 / 0.82 \\
+Efficient, $\alpha=8$ & $0.0000$ & $+0.00007$ & 0.06 / 0.06 & 0.61 / 0.82 \\
+\addlinespace
+Naive, $\alpha=1$ & $0.0135$ & $+0.00652$ & 0.60 / 0.98 & 0.00 / 0.00 \\
+Naive, $\alpha=3$ & $0.0044$ & $+0.00340$ & 0.52 / 0.82 & 0.00 / 0.00 \\
+Naive, $\alpha=8$ & $0.0010$ & $+0.00093$ & 0.29 / 0.50 & 0.14 / 0.12 \\
+Naive, $\alpha=16$ & $0.0003$ & $+0.00017$ & 0.12 / 0.21 & 0.57 / 0.78 \\
+\bottomrule
+\end{tabular}

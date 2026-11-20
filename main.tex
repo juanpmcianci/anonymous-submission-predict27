@@ -1,0 +1,385 @@
+\documentclass[runningheads]{llncs}
+
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{graphicx,booktabs}
+\usepackage[expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+\spnewtheorem{assumption}[theorem]{Assumption}{\bfseries}{\itshape}
+\newcommand{\R}{\mathbb R}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\logit}{\operatorname{logit}}
+\newcommand{\sigmoid}{\operatorname{expit}}
+\newcommand{\BF}{\mathrm{BF}}
+\newcommand{\IG}{\mathrm{IG}}
+\input{generated/revised_macros}
+\input{generated/paper_results}
+\setlength{\emergencystretch}{3em}
+\raggedbottom
+\begin{document}
+\title{When Does Price History Add Information? Endpoint Sufficiency in Prediction Markets}
+\titlerunning{Endpoint Sufficiency in Prediction Markets}
+\author{Anonymous submission}
+\authorrunning{Anonymous}
+\institute{}
+\maketitle
+\begin{abstract}
+A prediction-market price is a free forecast, so any method that uses the market's history must beat it. We ask when the history can add outcome information beyond the latest observed price, with the initial price and volume design fixed. The answer depends on which nuisance quantities are unknown. With Gaussian increments of known covariance, an unknown nonnegative response amplitude preserves a directional sufficiency criterion, and information formulas give the proper-score gain when it fails. An unknown common noise scale breaks sufficiency even when the response aligns with the endpoint: the rest of the path then tells how reliable the price signal is, which changes probabilities while preserving the equal-prior decision. For finite mixtures of trading regimes with common outcome tails, the endpoint is never sufficient unless the outcome laws coincide, yet the resulting gain can be negligibly small. A Brier and log-loss decomposition separates this intrinsic value from the approximation and estimation errors of fitted forecasts. In a frozen retrospective study of 2,650 Kalshi BTC and ETH 15-minute contracts, adding a fitted mixture signal to a matched price calibration changes held-out Brier loss by $-0.00011$ (95\% interval $[-0.00053,+0.00028]$) five minutes before close. A matched test of the confidence mechanism, pre-specified and shown by simulation to detect gains of practical size, was then run on a later, untouched cohort of 2,370 contracts. The gain from residual variation had the predicted sign but was practically equivalent to zero: $+0.00008$ in Brier loss (95\% interval $[-0.000001,+0.00016]$). Model-based information and achieved forecasting gains are different quantities, and in this market the price was hard to beat.
+\keywords{Prediction markets \and Price discovery \and Sufficiency \and Proper scoring rules \and Market microstructure}
+\end{abstract}
+
+\section{Introduction}
+A binary prediction-market contract pays one unit if an event occurs and zero otherwise. Its price is a forecast that anyone can read for free, which makes it a demanding baseline for any method that uses the same market's history. Prices track event frequencies well on average \cite{wolfers2004prediction}, although reading them as probabilities depends on beliefs, preferences and trading constraints \cite{manski2006interpreting,wolfers2006interpreting}. Forecasters, oracle designers and market designers all face the same question: when does the history carry outcome information that the price discards?
+
+Throughout, the \emph{endpoint} is the last observed price at the forecast cutoff, before resolution, and not the settlement value. With the initial price fixed, the endpoint is an invertible function of the sum of log-odds increments. We call it \emph{sufficient} when the marginal likelihood ratio depends on the increments only through that sum. Whether it does depends on what the observation model leaves unknown. We therefore study three model classes, each with shared nuisance parameters integrated out, and then test achieved forecasting gains on observed data.
+
+\medskip\noindent\textbf{Contributions.}
+\begin{enumerate}
+\item With known Gaussian covariance, an unknown nonnegative response amplitude preserves a directional criterion for endpoint sufficiency, and scalar information formulas give the exact proper-score gain when it fails (Sect.~\ref{sec:gauss}).
+\item An unknown common noise scale destroys sufficiency even when the mean response aligns with the endpoint. Residual path variation then calibrates confidence in the endpoint signal without changing the equal-prior decision (Sect.~\ref{sec:scale}, Fig.~\ref{fig:scale}).
+\item For finite mixtures of trading regimes with a shared nuisance state, common outcome tails imply that the endpoint is sufficient only if the outcome laws coincide. A contamination sweep shows that this strict insufficiency can carry a negligible gain (Sect.~\ref{sec:mixture}).
+\item A decomposition of Brier and log risk splits the achieved gain of a fitted history forecast into intrinsic information and two excess-risk terms, which combine approximation and estimation error (Prop.~\ref{prop:decomposition}). It explains how a model can require history dependence while a fitted model loses to the price.
+\item A frozen retrospective evaluation on 2,650 Kalshi contracts finds no clear incremental value from fitted history signals over matched price controls (Sect.~\ref{sec:empirical}).
+\item A matched test of the confidence mechanism, frozen before evaluation and checked by simulation for sensitivity and for false gains under efficient prices, finds an effect with the predicted sign but practically equivalent to zero on a later cohort of 2,370 contracts (Sect.~\ref{sec:confidence}).
+\end{enumerate}
+The theory characterizes information under specified observation laws. The experiment tests whether fitted forecasts realize it. We keep the two apart throughout.
+
+\medskip\noindent\textbf{Related work.}
+Closest to our question, Richard and Ve\v{c}e\v{r} \cite{richard2021efficiency} test the martingale property of in-play betting quotes, relate likelihood ratios and Bayes factors to trading profits, and find that history-based signals found in training mostly fail out of sample. They test whether past quotes help. We characterize when a prescribed endpoint is sufficient under nuisance-integrated observation laws, and explain why a fitted model can fail even where the model says history matters. Structural models explain how private information moves prices and order flow \cite{kyle1985continuous,glosten1985bid}. Our model derives no equilibrium. It specifies the conditional law of aggregate increments, so its parameters need external estimation or a stated prior. Bayesian inverse problems treat uncertain observation laws and posterior continuity \cite{stuart2010inverse,latz2020wellposedness}, and Bayes factors compare outcome-indexed families \cite{kass1995bayes,chatterjee2020bayes}. Volume-dependent mixing follows the mixture-of-experts construction \cite{jacobs1991adaptive}. Recent empirical work studies calibration across contracts, horizons and platforms \cite{le2026calibration}. We instead compare history models with explicit endpoint recalibrators under proper scoring rules \cite{gneiting2007strictly}. The links between sufficiency and proper scores are classical \cite{pitman1936sufficient,broecker2009reliability}. Our contribution is the dependence of endpoint sufficiency on the nuisance specification (unknown amplitude against unknown scale), the common-tail obstruction for mixtures, and the separation of intrinsic from achieved gains.
+
+\section{Setting and the ideal-price benchmark}
+\label{sec:model}
+Let $Y\in\{0,1\}$ be the event outcome with prior $\Prob(Y=1)=\pi_0$, where $0<\pi_0<1$ throughout. Fix an initial price $p_0\in(0,1)$ and a volume sequence $v_{1:T}\in[0,\infty)^T$. Observed prices $p_{1:T}$ define log-odds $x_t=\logit(p_t)$ and increments $z_t=x_t-x_{t-1}$. The analysis conditions on $p_0$ and the design. Conditioning on volume defines a conditional experiment and does not remove endogeneity: in $p(Y,\theta\mid z,v)\propto p(z\mid Y,\theta,v)\,p(Y,\theta\mid v)$, volume that depends on the outcome, private information or latent conditions affects both factors, so the prior must condition on it too. We do not derive this likelihood from strategic trading, and our claims are statistical. The simulations draw volumes independently of both. For live forecasting, a sequential factorization with a volume model would replace conditioning on a whole future design.
+
+\paragraph{Information sets.}
+The theory compares two forecasts that share $p_0$ and the design:
+\[
+ r^*=\Prob(Y=1\mid p_0,p_T,v_{1:T}),\qquad q^*=\Prob(Y=1\mid p_0,p_{1:T},v_{1:T}).
+\]
+Their difference is the value of the intermediate prices once the endpoint, the initial price and the volumes are known. The empirical forecasts of Sect.~\ref{sec:empirical} use other information sets (Table~\ref{tab:infosets}). Those comparisons are practical forecasting tests and do not estimate the theoretical quantity.
+
+\paragraph{Ideal prices.}
+Let $\mathcal F_t$ hold the public information at time $t$. If $p_t=\E[Y\mid\mathcal F_t]$, then $(p_t)$ is a bounded martingale and no forecast built from public history improves on $p_t$ in population Brier or log risk \cite{gelman2020information}. Outcome-dependent price changes remain compatible with this benchmark. For $s<t$ and $0<p_s<1$,
+\begin{equation}
+ \E[p_t-p_s\mid Y=1,\mathcal F_s]=\frac{\operatorname{Var}(p_t\mid\mathcal F_s)}{p_s},\qquad
+ \E[p_t-p_s\mid Y=0,\mathcal F_s]=-\frac{\operatorname{Var}(p_t\mid\mathcal F_s)}{1-p_s}.
+ \label{eq:outcome-drift}
+\end{equation}
+The first identity follows from $\E[Yp_t\mid\mathcal F_s]=\E[p_t^2\mid\mathcal F_s]$ by iterated conditioning. The second is analogous. A Gaussian example makes the point concrete. Let $Z_t\mid Y\sim N((2Y-1)\sigma_t^2/2,\sigma_t^2)$ independently, $\Prob(Y=1)=p_0$, and $p_t=\sigmoid(\logit p_0+\sum_{j\leq t}Z_j)$. Each log likelihood ratio equals $Z_t$, so $p_t$ is the posterior probability and a martingale, even though its increments depend on $Y$. An observation law with outcome-dependent drift therefore says nothing against efficient pricing, and a fitted history model that fails to beat the price does not establish efficiency either.
+
+\section{When is the endpoint sufficient?}
+\label{sec:endpoint}
+The endpoint is an invertible function of $S_T=\sum_tZ_t$ once $p_0$ is fixed. We call it \emph{outcome-sufficient} if $Y$ is conditionally independent of the full increment vector given $(S_T,v)$. Equivalently, the marginal likelihood ratio is a function of $S_T$ alone.
+
+\begin{proposition}[Value of history beyond the endpoint]
+\label{prop:history-value}
+Under the prior-predictive conditional model, let $q=\Prob(Y=1\mid Z_{1:T},v)$ and $r=\Prob(Y=1\mid S_T,v)$. For logarithmic loss $\mathcal L_{\log}$ and Brier loss $\mathcal L_B$,
+\begin{align*}
+ \E[\mathcal L_{\log}(r,Y)-\mathcal L_{\log}(q,Y)\mid v]&= I(Y;Z_{1:T}\mid S_T,v),\\
+ \E[\mathcal L_B(r,Y)-\mathcal L_B(q,Y)\mid v]&=\E[(q-r)^2\mid v].
+\end{align*}
+\end{proposition}
+\begin{proof}
+Expected log loss at a conditional probability is conditional entropy, and $S_T$ is a function of the history. Subtracting the two entropies gives the first identity. For Brier loss, expand $(Y-r)^2$ about $q$ and use $\E[Y-q\mid Z_{1:T},v]=0$.
+\end{proof}
+The comparison uses the optimal endpoint forecast under the same model. Fitted forecasts add approximation and estimation error on both sides, which the next result makes explicit. It follows from the orthogonality of conditional expectations, as in the sufficiency decompositions of proper scores \cite{broecker2009reliability}.
+
+\begin{proposition}[Intrinsic and achieved gains]
+\label{prop:decomposition}
+Let $\mathcal E\subseteq\mathcal H$ be the endpoint and history information, $q^*=\Prob(Y=1\mid\mathcal H)$ and $r^*=\Prob(Y=1\mid\mathcal E)$. For any fixed $\mathcal H$-measurable forecast $\widehat q$ and $\mathcal E$-measurable forecast $\widehat r$ with values in $(0,1)$, the Brier identity holds. The log identity holds when both log risks are finite, for example when both forecasts lie in $[\epsilon,1-\epsilon]$ for some $\epsilon>0$:
+\begin{align*}
+ R_B(\widehat r)-R_B(\widehat q)&=\E(q^*-r^*)^2+\E(\widehat r-r^*)^2-\E(\widehat q-q^*)^2,\\
+ R_{\log}(\widehat r)-R_{\log}(\widehat q)&=I(Y;\mathcal H\mid\mathcal E)+\E\,\KL(r^*\|\widehat r)-\E\,\KL(q^*\|\widehat q),
+\end{align*}
+where $R$ denotes expected loss and $\KL(a\|b)$ is the divergence between Bernoulli laws. For fitted forecasts, the expectations are under the evaluation law with the fitted models held fixed, that is, conditional on the training data.
+\end{proposition}
+\begin{proof}
+For $\mathcal H$-measurable $f$, $\E(Y-f)^2=\E(Y-q^*)^2+\E(q^*-f)^2$. If $f$ is also $\mathcal E$-measurable, $\E(q^*-f)^2=\E(q^*-r^*)^2+\E(r^*-f)^2$ because $\E[q^*\mid\mathcal E]=r^*$. Subtract the two cases. For log loss, $R_{\log}(f)=\E\,h(q^*)+\E\,\KL(q^*\|f)$ with $h$ the binary entropy. For $\mathcal E$-measurable $f$ the terms $\log(r^*/f)$ and $\log\{(1-r^*)/(1-f)\}$ are $\mathcal E$-measurable, so $\E\,\KL(q^*\|f)=\E\,\KL(q^*\|r^*)+\E\,\KL(r^*\|f)$, and $\E\,\KL(q^*\|r^*)=I(Y;\mathcal H\mid\mathcal E)$.
+\end{proof}
+The first term on each right-hand side is what the theorems below describe. We call the other two excess-risk terms. They include model misspecification and approximation limits of the model class as well as finite-sample error, so more training data need not remove them. A history model can therefore have positive intrinsic value and still lose to a fitted price forecast if its own error is larger. A gain over the raw last price cannot measure $I(Y;Z_{1:T}\mid S_T,v)$.
+
+\begin{table}[t]
+\caption{Endpoint sufficiency for the same prescribed endpoint in three model classes, with fixed initial price and design. Each statement uses the assumptions of its proposition. The rows do not form a joint unknown-amplitude and unknown-covariance theorem.}
+\label{tab:models}
+\centering\small
+\begin{tabular}{@{}p{0.27\linewidth}p{0.24\linewidth}p{0.38\linewidth}@{}}
+\toprule
+Observation model & Nuisance integrated & Endpoint sufficient iff \\
+\midrule
+Gaussian, known covariance & Response amplitude $A\geq0$ & Response aligns with the covariance-weighted sum direction (Prop.~\ref{prop:ext-sufficiency}) \\[3pt]
+Gaussian, known response & Gamma precision & $T=1$ or zero response (Prop.~\ref{prop:scale-sufficiency}) \\[3pt]
+Finite mixture, common tail ratios & Finite catalogue state & Marginal outcome laws coincide, $T\geq2$ (Prop.~\ref{prop:mixture-endpoint-tail}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Known covariance and an unknown response amplitude}
+\label{sec:gauss}
+Fix $p_0$, $v_{1:T}$, a known response vector $\boldsymbol a\in\R^T$ and a known positive-definite covariance $\Sigma$, either of which may depend on the design. Let
+\begin{equation}
+ Z=s_Y A\boldsymbol a+\varepsilon,\qquad \varepsilon\sim N(0,\Sigma),\qquad A\sim\nu,
+ \label{eq:ext-model}
+\end{equation}
+where $s_Y=2Y-1$, $Y$, $A$ and $\varepsilon$ are independent, $A\geq0$, $\Prob(A>0)>0$ and $\E A^2<\infty$. The amplitude $A$ is integrated out. Write $\boldsymbol1$ for the ones vector and set
+\begin{align}
+ S&=\boldsymbol1^{\mathsf T}Z, & U&=\boldsymbol a^{\mathsf T}\Sigma^{-1}Z, & C&=\boldsymbol1^{\mathsf T}\Sigma\boldsymbol1, & M&=\boldsymbol1^{\mathsf T}\boldsymbol a,\nonumber\\
+ J_{\rm H}&=\boldsymbol a^{\mathsf T}\Sigma^{-1}\boldsymbol a, & J_{\rm E}&=M^2/C, & \Delta&=J_{\rm H}-J_{\rm E}. &&
+ \label{eq:ext-strengths}
+\end{align}
+For $j>0$ let $G_j(u)=\int_0^\infty\exp\{\alpha u-\alpha^2j/2\}\nu(d\alpha)$, and $G_0(0)=1$.
+
+\begin{proposition}[Endpoint sufficiency with an unknown amplitude]
+\label{prop:ext-sufficiency}
+Under \eqref{eq:ext-model}, $\Delta\geq0$. The full-history and endpoint posterior probabilities are
+\begin{align}
+ q_{\rm H}&=\frac{\pi_0G_{J_{\rm H}}(U)}{\pi_0G_{J_{\rm H}}(U)+(1-\pi_0)G_{J_{\rm H}}(-U)},\nonumber\\
+ q_{\rm E}&=\frac{\pi_0G_{J_{\rm E}}(MS/C)}{\pi_0G_{J_{\rm E}}(MS/C)+(1-\pi_0)G_{J_{\rm E}}(-MS/C)}.
+ \label{eq:ext-posteriors}
+\end{align}
+The endpoint is sufficient for $Y$ if and only if
+\begin{equation}
+ \Delta=0\quad\Longleftrightarrow\quad\boldsymbol a=(M/C)\Sigma\boldsymbol1.
+ \label{eq:ext-criterion}
+\end{equation}
+If $\Delta>0$, the full-history posterior has strictly smaller expected log loss and strictly smaller expected Brier loss than $q_{\rm E}$.
+\end{proposition}
+The proof is in Appendix~\ref{app:gaussian-extension}. The score gain has an exact scalar form. Let $X=s_YA$ and $W_\gamma=\sqrt\gamma X+N$ with $N\sim N(0,1)$ independent of $(Y,A)$. Write $q_\gamma(w)=\Prob(Y=1\mid W_\gamma=w)$, $I_\nu(\gamma)=I(Y;W_\gamma)$ and $B_\nu(\gamma)=\E[q_\gamma(W_\gamma)\{1-q_\gamma(W_\gamma)\}]$. If $\boldsymbol a\neq0$, then $J_{\rm H}>0$, $U/\sqrt{J_{\rm H}}$ has the scalar law at $\gamma=J_{\rm H}$, and the endpoint has it at $\gamma=J_{\rm E}$ (with $W_0$ uninformative when $M=0$). If $\boldsymbol a=0$, neither carries information. The expected improvements are
+\begin{equation}
+ G_{\log}=I_\nu(J_{\rm H})-I_\nu(J_{\rm E}),\qquad G_B=B_\nu(J_{\rm E})-B_\nu(J_{\rm H}),
+ \label{eq:ext-score-gains}
+\end{equation}
+and the Gaussian information--MMSE identity \cite{guo2005mutual} gives
+\begin{equation}
+ G_{\log}=\frac12\int_{J_{\rm E}}^{J_{\rm H}}\E\!\left[q_\gamma(1-q_\gamma)\{m_1(W_\gamma;\gamma)-m_0(W_\gamma;\gamma)\}^2\right]d\gamma,
+ \label{eq:ext-conditional-immse}
+\end{equation}
+where $m_y(w;\gamma)=\E[X\mid W_\gamma=w,Y=y]$. In particular $0\leq G_{\log}\leq\Delta\,\E[A^2]/2$.
+
+\paragraph{What volume changes.}
+With independent errors, $\Sigma=\operatorname{diag}(\sigma_1^2,\ldots,\sigma_T^2)$, the criterion says that $a_t/\sigma_t^2$ is constant in $t$, and
+\begin{equation}
+ \Delta=\sum_t\sigma_t^2\left(\frac{a_t}{\sigma_t^2}-\frac{\sum_ja_j}{\sum_j\sigma_j^2}\right)^2.
+ \label{eq:ext-volume-dispersion}
+\end{equation}
+Variation of the response relative to the variance makes the history informative beyond its sum. Variation in volume alone does not. Take $a_t=v_t$, equal variances $\sigma^2$ and the two designs $(1,1)$ and $(1/2,3/2)$. Both have total volume two and the same endpoint law $S\mid Y,A\sim N(2s_YA,2\sigma^2)$, so $J_{\rm E}=2/\sigma^2$ and $I(Y;\text{endpoint})=I_\nu(2/\sigma^2)$ in both. The equal design has $\Delta=0$. The unequal design has $J_{\rm H}=5/(2\sigma^2)$, so $I(Y;\text{history})=I_\nu(5/(2\sigma^2))$ is larger, and its history strictly improves both proper scores.
+
+Because the endpoint laws coincide here, $G_{\log}$ measures extra information in the path. In general $G_{\log}=I(Y;\text{history})-I(Y;\text{endpoint})$ also grows when the endpoint aggregates worse while the history holds the same information. Comparing market rules such as batching or disclosure therefore needs both terms, plus a model linking the rule to the observation law.
+
+These gains describe a model-based opportunity. The vector $\boldsymbol a$, the covariance $\Sigma$ and the amplitude prior must be learned from separate data or specified in advance.
+
+\subsection{An unknown noise scale makes path variation informative}
+\label{sec:scale}
+Keep the design fixed and take $A=1$. Let $\Sigma_0$ be positive definite, $\boldsymbol a\in\R^T$ known, and
+\begin{equation}
+ Z\mid Y,\lambda\sim N(s_Y\boldsymbol a,\Sigma_0/\lambda),\qquad\lambda\sim\operatorname{Gamma}(\alpha,\beta),
+ \label{eq:scale-model}
+\end{equation}
+with shape $\alpha>0$, rate $\beta>0$ and $\lambda$ independent of $Y$. The precision is shared across the history and integrated out, which makes the increments dependent. Gaussian scale mixtures are classical \cite{lange1989robust}. Set $K=\Sigma_0^{-1}$, $U=\boldsymbol a^{\mathsf T}KZ$, $R=Z^{\mathsf T}KZ$, $J=\boldsymbol a^{\mathsf T}K\boldsymbol a$, $S=\boldsymbol1^{\mathsf T}Z$, $M=\boldsymbol1^{\mathsf T}\boldsymbol a$ and $C=\boldsymbol1^{\mathsf T}\Sigma_0\boldsymbol1$.
+
+\begin{proposition}[Insufficiency under an unknown scale]
+\label{prop:scale-sufficiency}
+Under \eqref{eq:scale-model}, the history and endpoint Bayes factors are
+\begin{align}
+ \mathrm{BF}_{\rm H}(Z)&=\left\{\frac{\beta+(R+J+2U)/2}{\beta+(R+J-2U)/2}\right\}^{\alpha+T/2},\nonumber\\
+ \mathrm{BF}_{\rm E}(S)&=\left\{\frac{\beta+(S+M)^2/(2C)}{\beta+(S-M)^2/(2C)}\right\}^{\alpha+1/2}.
+ \label{eq:scale-bf}
+\end{align}
+The endpoint is sufficient for $Y$ if and only if $T=1$ or $\boldsymbol a=0$. For every $T\geq2$ and $\boldsymbol a\ne0$, the exact history posterior has strictly smaller expected log and Brier losses than the exact endpoint posterior.
+\end{proposition}
+The proof is in Appendix~\ref{app:scale-extension}. The known-covariance alignment condition therefore stops being a sufficiency criterion once a common scale is integrated out.
+
+Suppose $\boldsymbol a=(M/C)\Sigma_0\boldsymbol1\neq0$, so that the mean response aligns with the endpoint and $U=MS/C$. The residual energy $E=R-S^2/C$ still enters \eqref{eq:scale-bf}. Given $\lambda$, $S$ and $E$ are independent, $\lambda E\sim\chi^2_{T-1}$, and
+\begin{equation}
+ \lambda\mid E\sim\operatorname{Gamma}\{\alpha+(T-1)/2,\,\beta+E/2\}.
+ \label{eq:scale-residual-precision}
+\end{equation}
+Although $E$ is independent of $Y$, it changes the reliability of the evidence in $S$. Take $T=2$, $\Sigma_0=I_2$, $\boldsymbol a=(1,1)^{\mathsf T}$ and $\alpha=\beta=1$. The records $(1,1)$ and $(2,0)$ share $S=2$ and $U=2$, but their history Bayes factors are $25$ and $9$. With equal priors the posteriors are $25/26\approx0.962$ and $9/10$, and the endpoint posterior is $0.918$ for both (Fig.~\ref{fig:scale}). The smooth path is stronger evidence than the jump because it implies a smaller noise scale.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{generated/scale_example.pdf}
+\caption{Two price paths from $p_0=1/2$ with the same endpoint under the unknown-scale model ($\Sigma_0=I_2$, $\boldsymbol a=(1,1)^{\mathsf T}$, $\alpha=\beta=1$, $\pi_0=1/2$). The endpoint posterior is $0.918$ for both. The history posteriors differ because residual variation is evidence about the noise scale.}
+\label{fig:scale}
+\end{figure} The distinction concerns probabilities and not necessarily decisions. For $\pi_0=1/2$ the history decision follows the sign of $U$, which in the aligned case agrees almost surely with the endpoint decision. The two classifiers then have equal error probability, yet deterministic integration gives Brier risks $0.108802$ (history) and $0.113789$ (endpoint), and log risks $0.357294$ and $0.378121$ nats. If $\alpha_n\to\infty$ with $\beta_n=\alpha_n/\lambda_0$, the log Bayes factors converge to the known-scale values $2\lambda_0U$ and $2\lambda_0Ms/C$, and the aligned gains vanish.
+
+The direction of the effect gives a testable prediction.
+
+\begin{corollary}[Residual variation shrinks endpoint evidence]
+\label{cor:shrink}
+Under \eqref{eq:scale-model} with $\boldsymbol a=(M/C)\Sigma_0\boldsymbol1\neq0$, let $E=R-S^2/C$, $U=MS/C$, $D=\beta+(E+S^2/C+J)/2$ and $\kappa=\alpha+T/2$. Then $\log\mathrm{BF}_{\rm H}=\kappa\log\{(D+U)/(D-U)\}$ and, for fixed $S$,
+\[
+ \frac{\partial\log\mathrm{BF}_{\rm H}}{\partial E}=-\frac{\kappa U}{D^2-U^2}.
+\]
+Since $D\pm U=\beta+(Z\pm\boldsymbol a)^{\mathsf T}K(Z\pm\boldsymbol a)/2\geq\beta>0$, the evidence $|\log\mathrm{BF}_{\rm H}|$ decreases in $E$ and tends to zero as $E\to\infty$.
+\end{corollary}
+\begin{proof}
+Substitute $R=E+S^2/C$ and $U=MS/C$ in \eqref{eq:scale-bf} and differentiate, using $\partial D/\partial E=1/2$.
+\end{proof}
+To first order, $\log\mathrm{BF}_{\rm H}\approx2\kappa U/D$, which is $S$ times a decreasing function of $E$. A forecast that adds residual variation additively, as a squared-increment feature does, moves the log-odds the same way whatever the sign of $S$ and cannot express this shrinkage. Section~\ref{sec:confidence} tests the interaction directly.
+
+\subsection{Mixtures of latent trading regimes}
+\label{sec:mixture}
+Let $K$ regimes have densities $g_k$, scales $s_k(v;\theta)>0$, outcome-dependent locations $m_{k,y}(v;\theta)$ and gates $\rho_k(v;\theta)$ with $\sum_k\rho_k=1$. Define
+\begin{equation}
+ f_y(z\mid v,\theta)=\sum_{k=1}^K\rho_k(v;\theta)\frac1{s_k(v;\theta)}g_k\!\left(\frac{z-m_{k,y}(v;\theta)}{s_k(v;\theta)}\right).
+ \label{eq:mixture}
+\end{equation}
+A regime with $m_{k,1}>m_{k,0}$ responds positively to the outcome, and one with equal locations is outcome-independent. Regime names describe shapes of the increment law and carry no claim about trader identity.
+
+\begin{assumption}[Product likelihood]
+\label{ass:product}
+Given $(Y,\theta)$ and the fixed design, the increments are independent with strictly positive densities \eqref{eq:mixture}, so $L_{y,T}(\theta;z,v)=\prod_{t=1}^Tf_y(z_t\mid v_t,\theta)$.
+\end{assumption}
+Let $\Pi$ be a proper nuisance prior independent of $Y$. The marginal likelihoods are $m_{y,T}=\int L_{y,T}\,\Pi(d\theta)$, the posterior is $\pi_T=\sigmoid(\logit\pi_0+\log\{m_{1,T}/m_{0,T}\})$, and the Jacobian from prices to increments cancels from the Bayes factor. Independence holds only given $\theta$. After integration the increments are dependent.
+
+\begin{proposition}[Endpoint diagnostic]
+\label{prop:mixture-endpoint-gradient}
+Let $m_0,m_1$ be strictly positive $C^1$ densities on $\R^T$, $0<\pi_0<1$ and $\ell=\log(m_1/m_0)$. Then $S$ is sufficient for $Y$ if and only if
+\begin{equation}
+ \partial_{z_r}\ell(z)=\partial_{z_t}\ell(z)\quad\text{for all }z\in\R^T\text{ and all }r,t.
+ \label{eq:mixture-gradient-test}
+\end{equation}
+Equivalently $\ell(z)=b(\boldsymbol1^{\mathsf T}z)$ for a $C^1$ function $b$. If \eqref{eq:mixture-gradient-test} fails, the optimal full-history forecast strictly improves expected Brier and log loss over the optimal endpoint forecast under the same densities.
+\end{proposition}
+This is the differentiable form of classical likelihood-ratio sufficiency \cite{pitman1936sufficient}. For a finite catalogue $m_y(z)=\sum_j\varpi_j\prod_tf_{yjt}(z_t)$ with masses $\varpi_j$ common to both outcomes, Appendix~\ref{app:mixture-endpoint} gives the score of $m_y$ in terms of the posterior responsibility of the shared state and of the component at each increment, so the test can be evaluated numerically.
+
+\begin{proposition}[Common-tail obstruction]
+\label{prop:mixture-endpoint-tail}
+Let $T\geq2$ and
+\[
+ m_y(z)=\sum_{j=1}^J\varpi_j\prod_{t=1}^T f_{yjt}(z_t),
+\]
+with positive smooth $f_{yjt}$ and masses $\varpi_j$ common to both outcomes. Suppose
+\begin{equation}
+ \lim_{x\to+\infty}\frac{f_{1jt}(x)}{f_{0jt}(x)}=\lim_{x\to-\infty}\frac{f_{1jt}(x)}{f_{0jt}(x)}=1\quad\text{for all }j,t.
+ \label{eq:mixture-common-tail}
+\end{equation}
+Then $S$ is sufficient for $Y$ if and only if $m_1=m_0$. Every outcome-informative member of this family therefore has a strictly positive model-based value of history beyond the endpoint.
+\end{proposition}
+The proof fixes a sum $s$ and takes $z_R=(R,\ldots,R,s-(T-1)R)$. All increments enter their tails while the sum stays $s$, so the likelihood ratio tends to one. An endpoint-only ratio would then equal one for every $s$. A positive Student component with outcome-independent weight, scale and degrees of freedom supplies \eqref{eq:mixture-common-tail} when all other components are Gaussian, and a finite outcome-dependent location shift leaves the leading tail unchanged. The condition covers the nine-state synthetic catalogue and the twelve-state empirical catalogue of Sect.~\ref{sec:empirical}. In the empirical catalogue, a positive-amplitude state has distinct outcome means at every positive volume, so the fitted family loses information at the endpoint whenever $T\geq2$. This statement concerns the full-support probability model. It gives no lower bound on an attainable gain and says nothing about the true market law.
+
+Strict insufficiency can coexist with a negligible gain. Take an aligned Gaussian model with equal variances, $Z_t\mid Y\sim N(s_Y0.1,0.5^2)$ and $T=10$, where the endpoint is sufficient (Prop.~\ref{prop:ext-sufficiency}). Mixing in a centered Student-$t_5$ component of weight $\varepsilon$ and matched variance satisfies \eqref{eq:mixture-common-tail}, so the endpoint becomes insufficient for every $0<\varepsilon<1$. With a numerically approximated oracle endpoint posterior (Appendix~\ref{app:synthetic}), the gain $I(Y;Z\mid S)$ is about $6\times10^{-6}$ nats at $\varepsilon=0.001$, $9.2\times10^{-5}$ (Monte Carlo standard error $0.7\times10^{-5}$) at $\varepsilon=0.01$ and $1.27\times10^{-3}$ ($0.03\times10^{-3}$) at $\varepsilon=0.1$, against $I(Y;Z)\approx0.17$ (Fig.~\ref{fig:oracle} in Appendix~\ref{app:synthetic}). The smallest value is driven by rare draws, and independent runs range from $5.9$ to $7.1\times10^{-6}$. Proposition~\ref{prop:mixture-endpoint-tail} is therefore a statement about model specification. A fitted mixture with Student tails requires history dependence whether or not the data contain usable path information.
+
+\section{Synthetic check}
+\label{sec:synthetic}
+We verify the calculations on the synthetic mixture of Appendix~\ref{app:synthetic}, with nine nuisance states and exact finite-prior integration. At $T=200$ with $\SimulationHistories$ test histories, finite-prior Bayes reaches Brier loss \PriorMarginalBrier{} and log loss \PriorMarginalLogLoss{}, against \PriorOracleBrier{} and \PriorOracleLogLoss{} when the generating state is known (Fig.~\ref{fig:scores} in Appendix~\ref{app:synthetic}). An intercept-and-slope recalibration of the endpoint logit, fitted on separate histories, is far worse: the full-history posterior minus the calibrated endpoint is \EndpointBrierDifference{} in Brier loss (95\% interval $[\EndpointBrierLower,\EndpointBrierUpper]$).
+
+That gap mixes the intrinsic value of history with the calibrator's error. To separate them we fix the design at $v_t\equiv1$, the mean volume, and approximate the oracle endpoint posterior $r^*$ by convolving the one-step densities of each nuisance state on a grid. Halving the grid spacing and widening the support by half changes $r^*$ by at most $5\times10^{-8}$, so Monte Carlo error dominates. With $40{,}000$ prior-predictive histories per horizon, the intrinsic Brier gain $\E(q^*-r^*)^2$ is $0.0018$, $0.0039$, $0.0106$ and $0.0203$ at $T=5$, $10$, $25$ and $50$ (Monte Carlo standard errors at most $0.00012$), and the log gain $I(Y;Z\mid S)$ is $0.0036$, $0.0080$, $0.0223$ and $0.0450$ nats. The fitted calibrator's own error $\E(\widehat r-r^*)^2$ stays near $0.0009$ (Fig.~\ref{fig:oracle}). In this model the gap is mostly intrinsic, as Proposition~\ref{prop:mixture-endpoint-tail} allows but does not quantify. The generator uses the same volume relationship and tail law as the fitted model, so this is a specification check and says nothing about real markets.
+
+
+\section{Evidence from Kalshi}
+\label{sec:empirical}
+\subsection{Cohort, timing and protocol}
+We collected resolved binary BTC and ETH 15-minute contracts from Kalshi's public API, using transaction-close prices and traded quantities from one-minute candles \cite{kalshi2026candles,kalshi2026markets}. The sampling rule selects contracts closing on an exact UTC hour from 3 August to 27 September 2026. It selects 2,650 of 2,688 nominal slots, and the 38 absent slots fall in Thursday morning hours in both series. Every selected contract has a finalized binary outcome. Candle volumes sum exactly to the recorded lifetime volume for all 2,650 contracts, and a paginated trade check of one opening minute reconciles 1,643 executions with the candle. These checks establish consistency of the downloaded records and not independent verification of the exchange data.
+
+Forecasts are issued five minutes (primary) and one minute (secondary) before scheduled close, and each uses only candles ending at least 60 seconds earlier. For a contract closing at 10:00, the 09:55 forecast uses candles ending no later than 09:54 and the 09:59 forecast uses candles ending no later than 09:58, so the final-minute settlement average never enters. The initial price $p_0$ is the close of the first candle, which ends one minute after the contract opens. A path therefore has 9 prices and 8 increments at the five-minute lead, and 13 prices and 12 increments at the one-minute lead. A record is excluded if any retained candle is missing, duplicated or untraded. No record was excluded. The reconstruction is retrospective, and the buffer is an assumption about publication latency.
+
+We split by UTC close date into training (3--30 August, 1,322 contracts), validation (31 August--13 September, 664) and test (14--27 September, 664). Both assets and all intraday contracts of a date stay together, and every label used in fitting settled before the next period's first forecast. The protocol, written before collection, froze the models, the metrics and the bootstrap. The code writes predictions and a checksum lock before a separate stage opens test labels. This is a local safeguard and not an external preregistration. Appendix~\ref{app:empirical} gives the full specification, and an anonymized artifact contains the code, data, frozen models and predictions.\footnote{Anonymized artifact: \url{https://osf.io/ANONYMIZED}.}
+
+\subsection{Forecasts and information sets}
+\begin{table}[t]
+\caption{Forecasts, their inputs and fitting windows. $x_t=\logit p_t$, $z_t=x_t-x_{t-1}$, $B$ is a log Bayes factor and ``asset'' an indicator. Ridge penalties for $P_{\rm lin}$, $H_{\rm log}$ and $E_{\rm log}$ are chosen from $\{0.01,0.1,1,10\}$ by validation log loss. $^\dagger$Added after test scores were seen.}
+\label{tab:infosets}
+\centering\scriptsize
+\begin{tabular}{@{}llp{0.42\linewidth}l@{}}
+\toprule
+Name & Forecast & Inputs & Fitted on \\
+\midrule
+$P_{\rm last}$ & Latest price & $p_T$ & none \\
+$P_{\rm lin}$ & Linear price calibration & $x_T$, asset & training \\
+$P_{\rm cub}$ & Cubic price calibration & $x_T,x_T^2,x_T^3$, each also times asset & validation \\
+$M$, $M_0$ & Mixture, with and without volume & $z_{1:T}$, $v_{1:T}$; training outcome rate & training \\
+$P_{\rm cub}{+}M$ & Price plus mixture & $P_{\rm cub}$ inputs and $B_M(z,v)$ & validation \\
+$G$ & Joint Gaussian history & $z_{1:T}$, asset & training \\
+$P_{\rm cub}{+}G$ & Price plus Gaussian & $P_{\rm cub}$ inputs and $B_G(z)$ & validation \\
+$H_{\rm log}$ & History logistic & $x_0$, $x_T$, last three increments summed, $\sum z_t^2$, volume-weighted mean increment, mean log volume, log-volume slope, asset & training \\
+$E_{\rm log}^\dagger$ & Matched endpoint logistic & $H_{\rm log}$ inputs without the three path features & training \\
+\bottomrule
+\end{tabular}
+\end{table}
+Table~\ref{tab:infosets} lists every forecast. The mixture $M$ has two directional Gaussian components and a centered Student-$t_5$ component, with twelve nuisance states (three directional weights times four signal amplitudes) shared over each path and catalogue masses fitted by supervised EM. It combines the exact path likelihood ratio with the smoothed training outcome rate. Increments are invariant to the price level, so $M$ ignores $p_0$ and $p_T$: paths with identical increments starting at $0.1$ and $0.9$ get the same forecast. $M$ is an increment model with a common prior, and its standalone result evaluates a model subject to that restriction.
+
+The incremental comparisons assess the empirical forecasting question. $P_{\rm cub}{+}M$ adds the single feature $B_M$ to $P_{\rm cub}$, with the same window, basis and penalty, so $P_{\rm cub}$ is its matched control. The combination enters $B_M$ as a regression feature with its own coefficient, which avoids counting overlapping evidence twice as adding it to the price log-odds would. $P_{\rm cub}$ is more flexible than $P_{\rm lin}$ but scores worse here, so it is a control and not the best price benchmark. The pair $H_{\rm log}$ and $E_{\rm log}$ is the comparison closest to the theory: both condition on $x_0$, $x_T$ and volume summaries, and differ by three path features. Volume summaries do not reproduce conditioning on the full design.
+
+\subsection{Held-out results}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{generated/empirical_differences_v2.pdf}
+\caption{Paired held-out Brier differences. Left: standalone forecasts minus $P_{\rm cub}$. Right, on a finer scale: each combination minus $P_{\rm cub}$, and $H_{\rm log}$ minus $E_{\rm log}$ ($^\dagger$exploratory). Points are means and lines 95\% percentile intervals from 5,000 bootstrap resamples of whole UTC dates. Positive values favor the reference.}
+\label{fig:differences}
+\end{figure}
+Fig.~\ref{fig:differences} and Table~\ref{tab:empirical-scores} in Appendix~\ref{app:empirical} give the results. Every difference below names its reference.
+
+\paragraph{Incremental value.} Against $P_{\rm cub}$, adding the mixture signal changes Brier loss by $-0.00011$ ($[-0.00053,+0.00028]$) at five minutes and $+0.00008$ ($[-0.00011,+0.00024]$) at one minute. Leaving out one test date at a time moves the five-minute mean within $[-0.00019,+0.00001]$ and the one-minute mean within $[+0.00004,+0.00015]$, and the combination wins on 6 and 4 of the 14 dates (Fig.~\ref{fig:dates}, Appendix~\ref{app:empirical}). Adding the Gaussian signal costs $+0.0020$ ($[-0.0007,+0.0047]$) and $+0.0021$ ($[+0.0007,+0.0034]$). In the exploratory theory-matched pair (Brier $0.12633$ against $0.12578$ at five minutes, $0.06941$ against $0.06566$ at one minute), $H_{\rm log}$ minus $E_{\rm log}$ is $+0.0005$ ($[-0.0005,+0.0016]$) and $+0.0038$ ($[+0.0021,+0.0056]$): the path features did not help at five minutes and hurt at one minute. $E_{\rm log}$ was fitted after the test scores were seen. It is a pre-specified contrast for the later cohort of Sect.~\ref{sec:confidence}.
+
+\paragraph{Standalone forecasts.} Against $P_{\rm lin}$, the mixture loses $+0.0668$ (interval $[+0.0566,+0.0754]$) at five minutes, with Brier losses $0.1923$ and $0.1255$. At one minute they are $0.1495$ and $0.0649$. By Proposition~\ref{prop:decomposition}, with $\mathcal E=\sigma(x_T,\text{asset})$ and $\mathcal H$ all observed path data, $\E(\widehat q-q^*)^2\ge R_B(\widehat q)-R_B(P_{\rm lin})$ for any history forecast, so the observed excess loss of $0.0668$ estimates a population lower bound on the mixture's mean squared distance from the best forecast based on all observed path data. On the validation window, the mixture's mean forecast ranges only from $0.45$ to $0.53$ across initial-price bins whose outcome rates range from $0.33$ to $0.71$ (Table~\ref{tab:validation-bins}). Within the central bin it still scores $0.196$ against $0.133$ for $P_{\rm lin}$ at five minutes. The pattern is consistent with the omitted price level contributing to the failure, but a binned comparison does not isolate that contribution. Removing volume improves the mixture to $0.1442$ and $0.0855$, still behind $P_{\rm lin}$. The ablation changes every volume-dependent gate, mean and variance at once, so it shows only that this volume specification hurts. $H_{\rm log}$ loses $+0.0008$ to $P_{\rm lin}$ at five minutes and $+0.0045$ at one minute.
+
+
+
+\paragraph{Scope.} Intervals are descriptive and unadjusted for multiple comparisons. There are 14 date-level resampling units, the bootstrap ignores dependence across dates, and it treats the fitted forecasts as fixed. An interval containing zero is not evidence that the incremental information is zero. The cohort is one platform, two related crypto series and short paths of 8 or 12 increments, far shorter than the synthetic $T=200$. We make no claim about executable prices or trading returns.
+
+\subsection{A test of the confidence mechanism}
+\label{sec:confidence}
+The comparisons above ask whether fitted history models add anything. Corollary~\ref{cor:shrink} names a specific way they could: residual variation should shrink the evidence in the endpoint. We test that mechanism with one feature. Let $S=x_T-x_0$, $E_\perp=\sum_t(z_t-S/T)^2$ (the residual energy with $\Sigma_0=I$) and
+\[
+ \phi=S\log(1+E_\perp/c),
+\]
+with $c$ the training median of $E_\perp$. The endpoint model $\widehat r$ is a penalized logistic regression on $b=(x_0$, the asset-specific cubic in $x_T$ of $P_{\rm cub}$, $\log(1+v_k)$ for every retained candle$)$. The history model $\widehat q$ adds $\phi$ with an unconstrained coefficient. Both are fitted on the training window with the penalty chosen on validation, as for $P_{\rm lin}$. The corollary predicts a negative coefficient. The training fits give $-0.0455$ at five minutes and $+0.514$ at one minute.
+
+We froze both models and wrote the analysis plan before evaluating them on any test data. The gain is $G_B=R_B(\widehat r)-R_B(\widehat q)$, so positive values favor the history feature. The primary contrast is $G_B$ at five minutes, with log loss secondary and the one-minute lead as robustness. The smallest worthwhile gain is $\delta=0.001$, about $0.8\%$ of the five-minute baseline loss and twice the validation gain from recalibrating the raw last price. An interval entirely above $\delta$ reads as an improvement exceeding $\delta$, one inside $(-\delta,\delta)$ as practical equivalence, and one with upper bound below $\delta$ as excluding gains of $\delta$ or more. Intervals resample whole dates, with circular three-date blocks as a sensitivity fixed in advance.
+
+\paragraph{Can the test detect the mechanism?} We ran the frozen procedure, with its features, penalty rule and decision rule, on data from the unknown-scale model with $T=8$, $\Sigma_0=I$, $\boldsymbol a=0.16\cdot\boldsymbol1$ and $\lambda\sim\operatorname{Gamma}(\alpha,\alpha/\lambda_0)$, $\lambda_0=1/0.49^2$, which matches the empirical increment scale and a five-minute Brier loss near $0.13$. Smaller $\alpha$ means more uncertainty about the noise scale and a larger oracle gain. In the \emph{naive} construction the price moves by the raw signal, $x_t=\sum_{j\le t}z_j$, and history informs reliability. In the \emph{efficient} construction the price is the public Bayesian posterior, $x_t=\log\mathrm{BF}_{\rm H}(z_{1:t})$, and history cannot help. Each of 200 replications per setting uses 1,322 training and 664 validation contracts and a test set of 664 contracts on 14 dates (the original test) or 2,350 on 49 dates (the later cohort). Table~\ref{tab:power} gives the results. Under efficient prices the fitted gain is centered at zero and the procedure manufactures no improvement, although its intervals exclude zero in $4$--$8\%$ of replications, above the nominal $2.5\%$. The date bootstrap is therefore somewhat liberal. With naive prices the fitted coefficient is negative in at least $96\%$ of replications for $\alpha\le8$, and the procedure recovers between about half and nearly all of the oracle gain. At the later-cohort size it detects a gain of $0.0044$ in $82\%$ of replications and a gain equal to $\delta$ in half. The efficient simulator checks the statistics only. Its price is a Bayesian posterior by construction and is not derived from traders' incentives.
+
+\begin{table}[t]
+\caption{Behavior of the frozen confidence test on simulated unknown-scale data, 200 replications per setting. Oracle gain is $\E(q^*-r^*)^2$. Achieved gain is the mean test $G_B$ with 664 test contracts. The last two columns give the frequency of an interval above zero and of an upper bound below $\delta=0.001$, with 664 and 2,350 test contracts.}
+\label{tab:power}
+\centering\scriptsize
+\input{generated/confidence_power}
+\end{table}
+
+\paragraph{Original test window (exploratory).} This window had been used for the comparisons above. At five minutes $G_B=+0.00003$ ($[-0.00008,+0.00016]$), practical equivalence within $\delta$. At one minute $G_B=-0.00089$ ($[-0.00262,+0.00066]$), which excludes gains of $\delta$ or more. Both matched models score worse than $P_{\rm lin}$ (Brier $0.1264$ against $0.1255$ at five minutes).
+
+\paragraph{Later cohort (confirmatory).} The cohort has 2,370 contracts on 50 UTC dates, closing from 01:00 UTC on 28 September to 16 November 2026. Two contracts closing at 00:00 UTC on 28 September were excluded in advance because their outcomes had been downloaded with the original listing. The 28 absent nominal slots are again Thursday-morning hours, candle volumes match lifetime volume for every contract, and no record was excluded. Models, protocol and file hashes were fixed before collection. Table~\ref{tab:confirm} gives the pre-specified contrasts.
+
+At five minutes $G_B=+0.00008$ ($[-0.000001,+0.00016]$), positive on 27 of 50 dates and under every leave-one-date-out deletion. By the pre-declared rule this is practical equivalence within $\delta$. Under the three-date block sensitivity the lower bound is $+0.000001$, an improvement by the rule, but the gain is still a twelfth of $\delta$. The log-loss gain is $+0.00028$ ($[-0.000004,+0.00057]$). At one minute $G_B=+0.00003$ ($[-0.00066,+0.00071]$), also practical equivalence. Both matched models remain behind $P_{\rm lin}$ (Brier $0.1367$ against $0.1356$ at five minutes). Residual variation therefore shrinks the endpoint evidence in the predicted direction, but by too little to matter: a test that detects a gain of $\delta$ in half of simulated runs at this size bounds the gain below $0.00017$.
+
+The frozen replication agrees with the original window. The mixture loses to $P_{\rm lin}$, the mixture signal adds nothing reliable to $P_{\rm cub}$, and the three path features of $H_{\rm log}$ again hurt at one minute. The raw last price beat $P_{\rm lin}$ by $0.0007$ ($[-0.0020,+0.0005]$) at five minutes, a sign that calibration drifts between periods.
+
+\begin{table}[t]
+\caption{Later cohort (2,370 contracts, 50 dates), pre-specified Brier contrasts with 95\% date-bootstrap intervals. The first row is a gain (positive favors the history feature). The others are differences (positive favors the reference).}
+\label{tab:confirm}
+\centering\scriptsize
+\begin{tabular}{@{}lll@{}}
+\toprule
+Contrast & Five minutes & One minute \\
+\midrule
+Confidence test, $G_B$ & $+0.00008$ $[-0.000001,+0.00016]$ & $+0.00003$ $[-0.00066,+0.00071]$ \\
+$P_{\rm cub}{+}M$ minus $P_{\rm cub}$ & $+0.00019$ $[-0.00001,+0.00039]$ & $-0.00005$ $[-0.00022,+0.00013]$ \\
+$P_{\rm cub}{+}G$ minus $P_{\rm cub}$ & $-0.00003$ $[-0.00127,+0.00125]$ & $-0.00020$ $[-0.00118,+0.00075]$ \\
+$H_{\rm log}$ minus $E_{\rm log}$ & $+0.00031$ $[-0.00011,+0.00073]$ & $+0.00222$ $[+0.00105,+0.00347]$ \\
+$M$ minus $P_{\rm lin}$ & $+0.0533$ $[+0.0453,+0.0611]$ & $+0.0806$ $[+0.0727,+0.0885]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+\label{sec:discussion}
+Whether the endpoint keeps all outcome information depends on which nuisance quantities are unknown. An unknown amplitude preserves the alignment criterion, and an unknown common scale does not, because residual variation then tells how much to trust the endpoint. The common-tail result is a property of the fitted model and can carry a negligible gain.
+
+Proposition~\ref{prop:decomposition} explains why the theory and the experiment can disagree, and Corollary~\ref{cor:shrink} gives the theory a direction to test. On Kalshi, fitted history signals added nothing reliable to matched price calibrations, in line with the martingale benchmark and with out-of-sample evidence from betting markets \cite{richard2021efficiency}. The confidence test makes this sharper. On an untouched cohort, a procedure that recovers most of a gain of $\delta$ in simulation found the predicted sign at five minutes and bounded the gain below a fifth of $\delta$. The mechanism is present in direction and negligible in size. For market design, $I(Y;\text{endpoint})$ and $I(Y;\text{history})$ should be reported together, since their difference can grow because the price aggregates worse.
+
+We give no equilibrium foundation. Deriving the likelihood from traders with private signals, budgets and inventory, and bounding the mixture's approximation error, remain open. The theory conditions on the design and assumes independent increments given the shared nuisance. The cohort is one platform and two related series.
+
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+\appendix
+\input{theory_extension_appendix}
+\input{scale_extension_appendix}
+\input{mixture_endpoint_appendix}
+\input{synthetic_appendix}
+\input{empirical_appendix}
+\input{supporting_bounds}
+\input{appendix}
+\end{document}

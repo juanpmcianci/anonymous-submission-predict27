@@ -1,0 +1,18 @@
+[
+  {
+    "source": "train",
+    "destination": "validation",
+    "labels": 1322,
+    "last_settlement_ts": 1788130811,
+    "first_forecast_ts": 1788134100,
+    "all_labels_available": true
+  },
+  {
+    "source": "validation",
+    "destination": "test",
+    "labels": 664,
+    "last_settlement_ts": 1789340408,
+    "first_forecast_ts": 1789343700,
+    "all_labels_available": true
+  }
+]

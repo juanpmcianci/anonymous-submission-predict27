@@ -1,0 +1,21 @@
+{
+  "created_utc": "2026-09-28T23:45:31.603914+00:00",
+  "python": "3.11.8",
+  "numpy": "1.26.4",
+  "files": {
+    "revision/empirical_protocol.md": "45c18188a18b9a8b3693e906f265cce22136bc49238d0fa3b56370a0c2f56525",
+    "revision/empirical_model_design.md": "b20007a1fbfec6b8fa93bc2dafad6af5300a9d8583a98fc8763e22eadd44fb09",
+    "code/empirical_evaluation.py": "345c37ec05fa59c101d4214ac0ae8b031203ee45eaaa43476f99319f9a65830f",
+    "code/empirical_mixture.py": "33c2806cfb0440c330afaf355890572446c32798781450be8448af8373ff5848",
+    "code/collect_kalshi.py": "b3f3e561c8e0fe981011c308b64683679f0b5d99d785d7884d18f3c6ae4c7128",
+    "code/empirical_results/features.npz": "064032445b7d434109b03231566f3ede3d651886eade0bfdd09b8097292f084d",
+    "code/empirical_results/records.json": "7535bdf8d69ea6fd84750b1abe026633a0a7c2cca0e3dc3d3cf871daddf98fbd",
+    "code/empirical_results/label_availability.json": "ddd15a30f8302f229c9960522b8394ac7f8b98764663658d0f2092b509f34710",
+    "code/empirical_results/labels_train.json": "39a94172c060bdc7266ef3eadec3cdd0862c5548c888893f5099dd9298998f81",
+    "code/empirical_results/labels_validation.json": "e939abf41481d064b8ebe3d6577e8ecd3f202c5069f626e9ac8c8ea5bbdb27d4",
+    "code/empirical_results/labels_test.json": "189361352b869657d3f88af7d1deef0a96c1895d730a9bbac6e81bfcba2d4d75",
+    "code/empirical_results/predictions.csv": "2eb70e49cd34ff266baeb5bd847cafeba448cfc70e1e3b2af4b8c72c2be856bb",
+    "code/empirical_results/fitted_models.json": "3dac814693ea32fbc1dbd530578b8b02ed4a830875651b0d6f5fd0778382d078"
+  },
+  "test_scores_computed": false
+}

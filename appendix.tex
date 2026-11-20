@@ -1,0 +1,87 @@
+\section{Bayes-factor rate and posterior concentration}
+\label{app:rate}
+Fix $\epsilon>0$ and one outcome $y$. The upper bound follows directly from the uniform likelihood deviation:
+\[
+ m_{y,T}\leq\exp\{T(a_{y,T}+u_{y,T})\}.
+\]
+Restricting the integral to $A_{y,T}(\epsilon)$ gives
+\[
+ m_{y,T}\geq\Pi(A_{y,T}(\epsilon))
+ \exp\{T(a_{y,T}-\epsilon-u_{y,T})\}.
+\]
+Consequently,
+\begin{equation}
+ a_{y,T}-\epsilon-u_{y,T}+T^{-1}\log\Pi(A_{y,T}(\epsilon))
+ \leq T^{-1}\log m_{y,T}\leq a_{y,T}+u_{y,T}.
+ \label{eq:laplace-bounds}
+\end{equation}
+Take a probability-one set on which the likelihood deviations converge for both outcomes, apply the prior-mass assumption for a countable sequence $\epsilon\downarrow0$, and conclude
+$T^{-1}\log m_{y,T}-a_{y,T}\to0$.
+
+Under the true model, nonnegativity of KL gives
+$a_{y^*,T}=\Lambda_{y^*,T}(\theta^*)$. Moreover,
+\[
+ a_{1-y^*,T}=\Lambda_{y^*,T}(\theta^*)-\delta_T.
+\]
+Subtracting the two log marginal likelihoods proves \eqref{eq:rate}. Let $c=\log\{\Prob(Y=y^*)/\Prob(Y=1-y^*)\}$ and
+$b_T=\log\{m_{y^*,T}/m_{1-y^*,T}\}$. Then
+\[
+ e_T=(1+e^{c+b_T})^{-1},\qquad
+ -T^{-1}\log e_T=T^{-1}\log(1+e^{c+b_T}).
+\]
+When $\liminf\delta_T>0$, we have $b_T/T=\delta_T+o(1)$ and $c+b_T\to\infty$, proving both consistency and the posterior error exponent.
+
+For the finite nuisance catalogue in the simulations with iid exogenous volumes, apply a strong law to the joint observations $(Z_t,V_t)$ for each of the finitely many outcome--parameter pairs. Absolute log-density expectations are finite in the stated model: the positive Student component supplies a polynomial lower tail, volumes have Gamma tails, and the data have finite second moments. For each pair $(y,j)$, also apply the strong law to $h_{y,j}(V_t)=\E_*[\log f_y(Z_t\mid V_t,\theta_j)\mid V_t]$. This function is integrable by the preceding absolute-integrability argument. Subtracting the two strong laws gives
+\[
+ \frac1T\sum_{t=1}^T\{\log f_y(Z_t\mid V_t,\theta_j)-h_{y,j}(V_t)\}\to0.
+\]
+Taking a finite maximum verifies the conditional-design likelihood deviations for almost every realized volume design, by disintegration of the joint probability-one event. Candidate-wise KL averages also converge, yielding a volume-averaged minimum over the finite support. This argument does not establish the result for every possible deterministic design.
+
+\section{Finite-prior fractional-moment bound}
+\label{app:finite}
+Write $L_*=L_{y^*,T}(\theta_{j^*})$ and $L_j^-=L_{1-y^*,T}(\theta_j)$. Since $m_{y^*,T}\geq w_*L_*$, the posterior odds against the truth obey
+\[
+ O_T=\frac{\Prob(Y=1-y^*)m_{1-y^*,T}}{\Prob(Y=y^*)m_{y^*,T}}
+ \leq R_T:=\frac r{w_*}\sum_{j=1}^Jw_j\frac{L_j^-}{L_*}.
+\]
+For $0<s<1$, $(\sum_j a_j)^s\leq\sum_j a_j^s$ for nonnegative $a_j$. Therefore
+\[
+ \E_*R_T^s\leq\left(\frac r{w_*}\right)^s
+ \sum_jw_j^s\E_*\left(\frac{L_j^-}{L_*}\right)^s
+ =C_T(s),
+\]
+where independence under the true law gives the product in \eqref{eq:affinity}. Because
+$e_T=O_T/(1+O_T)\leq\min\{1,R_T\}\leq R_T^s$,
+\eqref{eq:expected} follows. The event $e_T\geq\epsilon$ implies
+$R_T\geq\epsilon/(1-\epsilon)$. Markov's inequality applied to $R_T^s$ proves \eqref{eq:tail}. For uniform weights and $r=1$, the factors $J^s$ and $J^{-s}$ cancel inside each term, leaving $\sum_j A_{j,T}(s)\leq J e^{-Tc_T(s)}$.
+
+The proof does not treat a marginal Bayes factor as an independent-increment sum. It also avoids conditioning on a truncation event, which would change the expectations used to center a concentration inequality.
+
+\section{Stability and computable score bounds}
+\label{app:stability}
+For each fixed $y,\theta$, summing \eqref{eq:lipschitz} gives
+\[
+ e^{-D}L_{y,T}(\theta;z',v')\leq L_{y,T}(\theta;z,v)
+ \leq e^D L_{y,T}(\theta;z',v').
+\]
+Integrating against the same prior preserves these inequalities. Hence each log marginal likelihood changes by at most $D$, and the log Bayes factor changes by at most $2D$. Composing with the logistic function proves the posterior bound.
+
+For a positive mixture with weights independent of $z$,
+\[
+ \partial_z\log f_y(z\mid v,\theta)
+ =\sum_k r_k(z,v,y,\theta)\,\partial_z\log f_{k,y}(z\mid v,\theta),
+\]
+where $r_k=\rho_kf_{k,y}/f_y$ are nonnegative responsibilities summing to one. The absolute mixture score is therefore bounded by the largest absolute component score. On $|z|\leq R$, a Gaussian with mean $m$ and standard deviation $\sigma$ has score at most $(R+|m|)/\sigma^2$. For a Student component with location $m$, scale $s$, and $\nu$ degrees of freedom,
+\[
+ \left|\partial_z\log f(z)\right|
+ =\frac{(\nu+1)|z-m|}{\nu s^2+(z-m)^2}
+ \leq\frac{\nu+1}{2s\sqrt\nu}.
+\]
+Unlike a Gaussian log density, this Student log density has a globally bounded location score.
+
+For unchanged volumes, set $R_t=\max\{|z_t|,|z'_t|\}$ at each time. Evaluate the component bounds using $R_t$ and $v_t$, then maximize across times, both outcomes, and all catalogue states. The resulting $L_z$ certifies
+$|\log\BF_T-\log\BF'_T|\leq2L_z\sum_t|z_t-z'_t|$ for that pair of records. This is a pathwise bound using the actual perturbations. Replacing the sum by a noise standard deviation would not give a deterministic bound.
+
+For price perturbations, the mean value theorem bounds each logit difference by
+$|p_t-p'_t|/[\varepsilon(1-\varepsilon)]$. The triangle inequality for adjacent increments then gives the price-scale bound in the main text. Since the analysis fixes $p_0$, an increment distance is adequate; if initial states can vary, it is only a pseudometric on complete price histories unless the initial state is included.
+

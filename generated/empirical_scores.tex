@@ -1,0 +1,20 @@
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{2}{c}{5-minute lead} & \multicolumn{2}{c}{1-minute lead} \\
+Method & Brier & Log loss & Brier & Log loss \\
+\midrule
+Training frequency & 0.2506 & 0.6944 & 0.2506 & 0.6944 \\
+Initial price & 0.2303 & 0.6520 & 0.2303 & 0.6520 \\
+$P_{\rm last}$, latest price & 0.1271 & 0.3998 & 0.0655 & 0.2138 \\
+$P_{\rm lin}$, linear price calibration & 0.1255 & 0.3941 & 0.0649 & 0.2120 \\
+$P_{\rm cub}$, cubic price calibration & 0.1290 & 0.4042 & 0.0655 & 0.2117 \\
+$H_{\rm log}$, history logistic & 0.1263 & 0.3968 & 0.0694 & 0.2232 \\
+$M$, mixture & 0.1923 & 0.5660 & 0.1495 & 0.4695 \\
+$M_0$, mixture without volume & 0.1442 & 0.4431 & 0.0855 & 0.2835 \\
+$P_{\rm cub}{+}M$ & 0.1289 & 0.4041 & 0.0656 & 0.2119 \\
+$P_{\rm cub}{+}M_0$ & 0.1299 & 0.4060 & 0.0655 & 0.2120 \\
+$G$, joint Gaussian history & 0.1355 & 0.4168 & 0.0766 & 0.2500 \\
+$P_{\rm cub}{+}G$ & 0.1310 & 0.4083 & 0.0676 & 0.2174 \\
+$E_{\rm log}^\dagger$, matched endpoint logistic & 0.1258 & 0.3955 & 0.0657 & 0.2139 \\
+\bottomrule
+\end{tabular}

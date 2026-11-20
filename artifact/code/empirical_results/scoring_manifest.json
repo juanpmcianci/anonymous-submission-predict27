@@ -1,0 +1,16 @@
+{
+  "created_utc": "2026-09-28T23:46:05.978826+00:00",
+  "prediction_lock_sha256": "db877ec798a3f2e0e4301cefbec8ac55d8ca53eab240161cc969a732222d8a46",
+  "bootstrap_seed": 20260929,
+  "bootstrap_repetitions": 5000,
+  "outputs": {
+    "coverage.csv": "a395ab291b344a9a062b2cd63dea443fa6719dd51c9e06e1e533ce3d4942b8fa",
+    "calibration.csv": "dac2be554c6586b66864338d2f5be73b643d7549b3310c7df8768035e091e47a",
+    "paired_differences.csv": "e42ac7fe85be5bafd270c3fef4f0844ea8d9e0e0d110123ce3cfd54a64a2c0e9",
+    "predictions.csv": "2eb70e49cd34ff266baeb5bd847cafeba448cfc70e1e3b2af4b8c72c2be856bb",
+    "asset_scores.csv": "8689b2bde906ef360f7f385a3f34eb46474f7a839b2adba5021cdcf5f7295085",
+    "daily_differences.csv": "6c591c47c526f58bd94fee4d4f8339aaebd65968a01192c3a7e17ae77cd5ee9c",
+    "scores.csv": "022969bfe0ab5bb1715dde72d8ca69e8c28664bebf41121ce0300a8cd1c736c6",
+    "scored_predictions.csv": "9e9da73ed864693b0efb6c3f995d193b2b75d7c211fcbf504507c6ece5d61211"
+  }
+}
